@@ -1,0 +1,47 @@
+{
+  "manifest_version": "0.3",
+  "name": "agent-in-browser",
+  "display_name": "agent-in-browser",
+  "version": "0.0.0",
+  "description": "A real browser for any AI agent: Chrome, Edge, Brave via CDP and Firefox via WebDriver BiDi.",
+  "long_description": "Drive the browsers already installed on your machine: navigate, read pages as compact snapshots with element refs, click, type, fill forms, take screenshots, and inspect console and network. The browser runs on its own profile and stays open between conversations. The same binary also works as a shell CLI and as a YAML scenario runner for cross-browser tests.",
+  "author": { "name": "Gwakko", "url": "https://github.com/Gwakko" },
+  "repository": { "type": "git", "url": "https://github.com/Gwakko/agent-in-browser" },
+  "homepage": "https://github.com/Gwakko/agent-in-browser",
+  "documentation": "https://github.com/Gwakko/agent-in-browser#readme",
+  "support": "https://github.com/Gwakko/agent-in-browser/issues",
+  "icon": "icon.png",
+  "license": "MIT",
+  "keywords": ["browser", "automation", "chrome", "firefox", "edge", "cdp", "webdriver-bidi", "testing", "scraping"],
+  "server": {
+    "type": "binary",
+    "entry_point": "server/agent-in-browser",
+    "mcp_config": {
+      "command": "${__dirname}/server/agent-in-browser",
+      "args": ["mcp", "--browser", "${user_config.browser}", "--headless=${user_config.headless}"],
+      "platform_overrides": {
+        "linux": { "command": "${__dirname}/server/agent-in-browser-linux" },
+        "win32": { "command": "${__dirname}/server/agent-in-browser.exe" }
+      }
+    }
+  },
+  "tools": [],
+  "tools_generated": false,
+  "user_config": {
+    "browser": {
+      "type": "string",
+      "title": "Browser",
+      "description": "auto, chrome, edge, brave, chromium, vivaldi, opera, firefox, firefox-dev",
+      "default": "auto",
+      "required": false
+    },
+    "headless": {
+      "type": "boolean",
+      "title": "Headless",
+      "description": "Run the browser without a visible window",
+      "default": false,
+      "required": false
+    }
+  },
+  "compatibility": { "platforms": ["darwin", "win32", "linux"] }
+}

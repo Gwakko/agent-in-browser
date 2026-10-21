@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"syscall"
 	"time"
@@ -27,6 +28,13 @@ import (
 )
 
 var version = "dev"
+
+func init() {
+	// `go install …@vX` builds carry the module version instead of ldflags.
+	if bi, ok := debug.ReadBuildInfo(); ok && version == "dev" && bi.Main.Version != "" && bi.Main.Version != "(devel)" {
+		version = strings.TrimPrefix(bi.Main.Version, "v")
+	}
+}
 
 const usage = `agent-in-browser — a real browser for any AI agent, model or test runner.
 
@@ -63,7 +71,7 @@ Browser flags (mcp, launch, call, status, stop):
   --viewport WxH      Window/viewport size (default 1280x800)
 
 Environment: AIB_BROWSER, AIB_HEADLESS=1, AIB_INSTANCE, AIB_ENDPOINT, AIB_HOME (data dir).
-Docs: https://github.com/gwakko/agent-in-browser
+Docs: https://github.com/Gwakko/agent-in-browser
 `
 
 func main() {

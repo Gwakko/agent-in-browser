@@ -3,3 +3,4 @@ dist/
 aib-artifacts/
 *.test
 .DS_Store
+.task/

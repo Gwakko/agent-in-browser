@@ -18,6 +18,11 @@ builds:
     goos: [darwin, linux, windows]
     goarch: [amd64, arm64]
 
+# Extra darwin "all" (arm64+amd64) binary, used by the MCP bundle.
+universal_binaries:
+  - id: agent-in-browser
+    replace: false
+
 archives:
   - id: default
     formats: [tar.gz]
@@ -39,13 +44,5 @@ changelog:
   filters:
     exclude: ["^docs:", "^chore:", "^test:"]
 
-# Homebrew: create github.com/gwakko/homebrew-tap, add a HOMEBREW_TAP_TOKEN
-# secret, then uncomment. Users: brew install gwakko/tap/agent-in-browser
-# homebrew_casks:
-#   - name: agent-in-browser
-#     repository: { owner: gwakko, name: homebrew-tap, token: "{{ .Env.HOMEBREW_TAP_TOKEN }}" }
-#     homepage: https://github.com/gwakko/agent-in-browser
-#     description: A real browser for any AI agent, model or test runner (MCP + CLI)
-#     binaries: [agent-in-browser]
-
-# Scoop (Windows): scoops: [...]  — same pattern with a bucket repo.
+# Homebrew tap and MCP bundle/registry are handled in .github/workflows/release.yml
+# (packaging/homebrew, packaging/mcpb) so they don't depend on goreleaser Pro or tokens.

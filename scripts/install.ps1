@@ -1,6 +1,6 @@
 # agent-in-browser installer for Windows (PowerShell 5+).
 #
-#   irm https://raw.githubusercontent.com/gwakko/agent-in-browser/main/scripts/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/Gwakko/agent-in-browser/main/scripts/install.ps1 | iex
 #   & ([scriptblock]::Create((irm .../install.ps1))) -Version v0.1.0 -Setup claude-code
 param(
   [string]$Version = $(if ($env:AIB_VERSION) { $env:AIB_VERSION } else { "latest" }),
@@ -9,7 +9,7 @@ param(
   [string]$Skill = $env:AIB_SKILL
 )
 $ErrorActionPreference = "Stop"
-$Repo = "gwakko/agent-in-browser"
+$Repo = "Gwakko/agent-in-browser"
 $Bin = "agent-in-browser"
 
 $arch = if ([System.Environment]::Is64BitOperatingSystem) {

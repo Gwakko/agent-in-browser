@@ -4,7 +4,7 @@ vars:
   BIN: agent-in-browser
   PKG: ./cmd/agent-in-browser
   VERSION:
-    sh: git describe --tags --always --dirty 2>/dev/null || echo dev
+    sh: (git describe --tags --always --dirty 2>/dev/null || echo dev) | sed 's/^v//'
   LDFLAGS: -s -w -X main.version={{.VERSION}}
   INSTALL_DIR: '{{.INSTALL_DIR | default (printf "%s/.local/bin" .HOME)}}'
   PLATFORMS: darwin/arm64 darwin/amd64 linux/amd64 linux/arm64 windows/amd64 windows/arm64
@@ -102,6 +102,19 @@ tasks:
     deps: [build]
     cmds:
       - ./bin/{{.BIN}} tools --markdown > docs/tools.md
+
+  demo:
+    desc: Re-record docs/demo.gif (Chrome + Firefox, headless)
+    cmds:
+      - go run ./scripts/demo -out docs/demo.gif -browsers {{.BROWSERS | default "chrome,firefox"}}
+
+  mcpb:
+    desc: Build a local MCP bundle into dist/mcpb (macOS host; needs task build:all)
+    deps: [build:all]
+    cmds:
+      - lipo -create -output dist/darwin_universal dist/{{.BIN}}_darwin_arm64/{{.BIN}} dist/{{.BIN}}_darwin_amd64/{{.BIN}}
+      - packaging/mcpb/build.sh {{.VERSION}} dist/darwin_universal dist/{{.BIN}}_linux_amd64/{{.BIN}} dist/{{.BIN}}_windows_amd64/{{.BIN}}.exe dist/mcpb
+      - npx -y @anthropic-ai/mcpb info dist/mcpb/{{.BIN}}-{{.VERSION}}.mcpb
 
   release:snapshot:
     desc: Local goreleaser dry run into dist/

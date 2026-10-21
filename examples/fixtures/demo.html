@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Acme Cloud — Create your workspace</title>
+  <style>
+    :root { --brand: #5b5bd6; --ink: #1c1d29; --muted: #6b6f80; --line: #e3e4ec; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 15px/1.5 -apple-system, "Segoe UI", Inter, Roboto, sans-serif; color: var(--ink);
+      background: linear-gradient(135deg, #eef0ff 0%, #f8f9fc 55%, #fff3ea 100%); min-height: 100vh; }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 18px 40px; }
+    .logo { font-weight: 700; font-size: 18px; display: flex; gap: 8px; align-items: center; }
+    .logo i { width: 22px; height: 22px; border-radius: 6px; background: var(--brand); display: inline-block; }
+    nav a { color: var(--muted); text-decoration: none; margin-left: 22px; }
+    main { display: grid; grid-template-columns: 1fr 420px; gap: 48px; max-width: 960px; margin: 24px auto; padding: 0 40px; }
+    h1 { font-size: 34px; line-height: 1.15; margin: 32px 0 12px; letter-spacing: -0.02em; }
+    .lead { color: var(--muted); font-size: 16px; }
+    ul.perks { padding: 0; list-style: none; margin-top: 24px; }
+    ul.perks li { margin: 10px 0; padding-left: 26px; position: relative; }
+    ul.perks li::before { content: "✓"; position: absolute; left: 0; color: var(--brand); font-weight: 700; }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 28px; box-shadow: 0 10px 30px rgba(30, 30, 80, .08); }
+    .card h2 { margin: 0 0 18px; font-size: 20px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 6px; }
+    input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; background: #fff; }
+    input:focus, select:focus { outline: 2px solid #c7c7f5; border-color: var(--brand); }
+    .row { display: flex; gap: 10px; align-items: center; margin-top: 16px; font-size: 14px; }
+    .row input { width: auto; }
+    button { margin-top: 20px; width: 100%; padding: 12px; border: 0; border-radius: 8px; background: var(--brand); color: #fff; font: 600 15px inherit; cursor: pointer; }
+    .ok { display: none; text-align: center; padding: 24px 8px; }
+    .ok b { font-size: 22px; display: block; margin: 8px 0; }
+    .ok .badge { width: 56px; height: 56px; border-radius: 50%; background: #e7f8ee; color: #1f9d55; font-size: 30px; line-height: 56px; margin: 0 auto; }
+    .card.done form { display: none; } .card.done .ok { display: block; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo"><i></i> Acme Cloud</div>
+    <nav aria-label="Main"><a href="#pricing">Pricing</a><a href="#docs">Docs</a><a href="#login">Sign in</a></nav>
+  </header>
+  <main>
+    <section>
+      <h1>Ship your next idea in minutes</h1>
+      <p class="lead">Create a workspace, invite your team and deploy from Git. Free for small teams.</p>
+      <ul class="perks"><li>Unlimited projects</li><li>Preview deployments</li><li>SSO on Team plan</li></ul>
+    </section>
+    <div class="card" id="card">
+      <form id="f" onsubmit="event.preventDefault(); done();">
+        <h2>Create your workspace</h2>
+        <label for="email">Work email</label>
+        <input id="email" type="email" placeholder="you@company.com" required>
+        <label for="ws">Workspace name</label>
+        <input id="ws" placeholder="acme-labs" required>
+        <label for="plan">Plan</label>
+        <select id="plan"><option value="free">Free</option><option value="pro">Pro — $12/mo</option><option value="team">Team — $29/mo</option></select>
+        <div class="row"><input type="checkbox" id="tos" required><label for="tos" style="margin:0;font-weight:400">I agree to the Terms of Service</label></div>
+        <button type="submit">Create workspace</button>
+      </form>
+      <div class="ok" role="status"><div class="badge">✓</div><b id="welcome"></b><span id="detail" style="color:var(--muted)"></span></div>
+    </div>
+  </main>
+  <script>
+    function done() {
+      const ws = document.getElementById('ws').value, plan = document.getElementById('plan');
+      document.getElementById('welcome').textContent = 'Welcome to ' + ws + '!';
+      document.getElementById('detail').textContent = plan.options[plan.selectedIndex].text + ' · ' + document.getElementById('email').value;
+      document.getElementById('card').classList.add('done');
+      console.log('workspace created', ws);
+    }
+  </script>
+</body>
+</html>

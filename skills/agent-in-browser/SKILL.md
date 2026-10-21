@@ -73,6 +73,6 @@ To turn a flow into a repeatable test, write a YAML scenario and run `agent-in-b
 ## Install (for the user)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/gwakko/agent-in-browser/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/Gwakko/agent-in-browser/main/scripts/install.sh | sh
 agent-in-browser setup claude-code --write   # or cursor, codex, gemini, windsurf, …
 ```

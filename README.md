@@ -1,6 +1,15 @@
 # agent-in-browser
 
+[![ci](https://github.com/Gwakko/agent-in-browser/actions/workflows/ci.yml/badge.svg)](https://github.com/Gwakko/agent-in-browser/actions/workflows/ci.yml)
+[![release](https://img.shields.io/github/v/release/Gwakko/agent-in-browser)](https://github.com/Gwakko/agent-in-browser/releases/latest)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gwakko/agent-in-browser)](https://goreportcard.com/report/github.com/gwakko/agent-in-browser)
+[![license](https://img.shields.io/github/license/Gwakko/agent-in-browser)](LICENSE)
+
 **A real browser for any AI agent, any model, and any test runner** — one dependency-free binary.
+
+![The same agent tool calls driving Chrome over CDP and Firefox over WebDriver BiDi](docs/demo.gif)
+
+<sub>Real recording, not a mock-up. The agent reads the page as a snapshot with element refs, types, fills the form and clicks, first in Chrome (CDP), then in Firefox (WebDriver BiDi). Regenerate it with `task demo`.</sub>
 
 `agent-in-browser` is an open take on "Claude in Chrome". It doesn't need an extension or a vendor-specific runtime. It drives the browsers you already have through their native automation protocols:
 
@@ -22,10 +31,13 @@ An **agent skill** ([`skills/agent-in-browser/SKILL.md`](skills/agent-in-browser
 
 ```bash
 # macOS / Linux
-curl -fsSL https://raw.githubusercontent.com/gwakko/agent-in-browser/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/Gwakko/agent-in-browser/main/scripts/install.sh | sh
 
 # Windows (PowerShell)
-irm https://raw.githubusercontent.com/gwakko/agent-in-browser/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/Gwakko/agent-in-browser/main/scripts/install.ps1 | iex
+
+# Homebrew (macOS / Linux)
+brew install gwakko/tap/agent-in-browser
 
 # With Go
 go install github.com/gwakko/agent-in-browser/cmd/agent-in-browser@latest
@@ -44,6 +56,8 @@ agent-in-browser setup gemini --write         # ~/.gemini/settings.json
 agent-in-browser setup vscode                 # prints the snippet for .vscode/mcp.json
 agent-in-browser skill install --for claude   # ~/.claude/skills/agent-in-browser (also: codex, agents, --dir)
 ```
+
+**Claude Desktop, one click:** download `agent-in-browser-<version>.mcpb` from the [latest release](https://github.com/Gwakko/agent-in-browser/releases/latest) and open it. It also appears in the [MCP Registry](https://registry.modelcontextprotocol.io/) as `io.github.Gwakko/agent-in-browser`.
 
 Without `--write`, `setup` only prints the config. Pass browser options through with `--args "--browser firefox --headless"`. See [docs/integrations.md](docs/integrations.md) for every client.
 

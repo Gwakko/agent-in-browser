@@ -1,7 +1,7 @@
 #!/bin/sh
 # agent-in-browser installer for macOS and Linux.
 #
-#   curl -fsSL https://raw.githubusercontent.com/gwakko/agent-in-browser/main/scripts/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/Gwakko/agent-in-browser/main/scripts/install.sh | sh
 #   curl -fsSL .../install.sh | sh -s -- --version v0.1.0 --dir /usr/local/bin --setup claude-code
 #
 # Options (or env vars):
@@ -13,7 +13,8 @@
 #   --from-source                 build with `go install` instead of downloading
 set -eu
 
-REPO="gwakko/agent-in-browser"
+REPO="Gwakko/agent-in-browser"
+MODULE="github.com/gwakko/agent-in-browser"
 BIN="agent-in-browser"
 VERSION="${AIB_VERSION:-latest}"
 DIR="${AIB_DIR:-$HOME/.local/bin}"
@@ -49,7 +50,7 @@ if [ "$FROM_SOURCE" = 1 ]; then
   need go
   ref="latest"; [ "$VERSION" != latest ] && ref="$VERSION"
   say "building from source (go install ...@$ref)"
-  GOBIN="$DIR" CGO_ENABLED=0 go install "github.com/$REPO/cmd/$BIN@$ref"
+  GOBIN="$DIR" CGO_ENABLED=0 go install "$MODULE/cmd/$BIN@$ref"
 else
   os=$(uname -s | tr '[:upper:]' '[:lower:]')
   case "$os" in darwin|linux) ;; *) die "unsupported OS $os (use scripts/install.ps1 on Windows)";; esac

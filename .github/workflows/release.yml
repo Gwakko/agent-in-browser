@@ -6,19 +6,68 @@ on:
 
 permissions:
   contents: write
+  id-token: write # MCP Registry login via GitHub OIDC
 
 jobs:
-  goreleaser:
+  release:
     runs-on: ubuntu-latest
+    env:
+      TAP_KEY: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - uses: actions/setup-go@v5
         with: { go-version-file: go.mod }
-      - uses: goreleaser/goreleaser-action@v6
+
+      - name: Build and publish GitHub release
+        uses: goreleaser/goreleaser-action@v6
         with:
           version: "~> v2"
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+
+      - name: Version
+        id: v
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      # MCP Bundle: one-click install in Claude Desktop + MCP Registry package.
+      - name: Build MCP bundle
+        id: mcpb
+        run: |
+          bin() { find dist -type f -path "*$1*" -name "$2" | head -1; }
+          out=$(packaging/mcpb/build.sh "${{ steps.v.outputs.version }}" \
+            "$(bin darwin_all agent-in-browser)" \
+            "$(bin linux_amd64 agent-in-browser)" \
+            "$(bin windows_amd64 agent-in-browser.exe)" dist/mcpb)
+          npx -y @anthropic-ai/mcpb info "$out"
+          gh release upload "$GITHUB_REF_NAME" "$out" --clobber
+          echo "file=$(basename "$out")" >> "$GITHUB_OUTPUT"
+          echo "sha=$(sha256sum "$out" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to MCP Registry
+        run: |
+          v="${{ steps.v.outputs.version }}"
+          url="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${{ steps.mcpb.outputs.file }}"
+          jq --arg v "$v" --arg url "$url" --arg sha "${{ steps.mcpb.outputs.sha }}" \
+            '.version = $v | .packages[0].identifier = $url | .packages[0].fileSha256 = $sha' server.json > server.release.json
+          mv server.release.json server.json
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish
+
+      - name: Update Homebrew tap
+        if: env.TAP_KEY != ''
+        run: |
+          mkdir -p ~/.ssh && echo "$TAP_KEY" > ~/.ssh/tap && chmod 600 ~/.ssh/tap
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/tap -o StrictHostKeyChecking=accept-new"
+          git clone git@github.com:Gwakko/homebrew-tap.git tap
+          mkdir -p tap/Formula
+          packaging/homebrew/formula.sh "${{ steps.v.outputs.version }}" dist/checksums.txt > tap/Formula/agent-in-browser.rb
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/agent-in-browser.rb
+          git commit -m "agent-in-browser ${{ steps.v.outputs.version }}" && git push || echo "formula unchanged"

@@ -21,4 +21,5 @@
 - [ ] Scenario features: `include`, `before/after` hooks, data-driven runs (`matrix.vars`), parallel workers, retries, HTML report.
 - [ ] Device emulation presets (`resize device="iPhone 15"`), geolocation, network throttling (CDP).
 - [ ] Chromium via BiDi (chromedriver) so one protocol covers everything where possible.
-- [ ] Packaging: Homebrew tap, Scoop bucket, npm wrapper (`npx agent-in-browser`), Docker image with Chromium + Firefox.
+- [x] Packaging: Homebrew tap, MCP bundle (.mcpb) for Claude Desktop, MCP Registry listing
+- [ ] Packaging: Scoop bucket, npm wrapper (`npx agent-in-browser`), Docker image with Chromium + Firefox, Smithery
