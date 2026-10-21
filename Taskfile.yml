@@ -1,0 +1,126 @@
+version: "3"
+
+vars:
+  BIN: agent-in-browser
+  PKG: ./cmd/agent-in-browser
+  VERSION:
+    sh: git describe --tags --always --dirty 2>/dev/null || echo dev
+  LDFLAGS: -s -w -X main.version={{.VERSION}}
+  INSTALL_DIR: '{{.INSTALL_DIR | default (printf "%s/.local/bin" .HOME)}}'
+  PLATFORMS: darwin/arm64 darwin/amd64 linux/amd64 linux/arm64 windows/amd64 windows/arm64
+
+env:
+  CGO_ENABLED: "0"
+
+tasks:
+  default:
+    desc: List tasks
+    cmds: [task --list]
+    silent: true
+
+  build:
+    desc: Build ./bin/agent-in-browser for this machine
+    sources: ["**/*.go", "internal/page/lib.js", "skills/**/*", "go.mod", "go.sum"]
+    generates: ["bin/{{.BIN}}{{exeExt}}"]
+    cmds:
+      - go build -trimpath -ldflags "{{.LDFLAGS}}" -o bin/{{.BIN}}{{exeExt}} {{.PKG}}
+
+  build:all:
+    desc: Cross-compile release binaries into dist/ (no goreleaser needed)
+    cmds:
+      - rm -rf dist && mkdir -p dist
+      - for: { var: PLATFORMS, split: " " }
+        cmd: |
+          os=$(echo {{.ITEM}} | cut -d/ -f1); arch=$(echo {{.ITEM}} | cut -d/ -f2)
+          ext=""; [ "$os" = windows ] && ext=".exe"
+          GOOS=$os GOARCH=$arch go build -trimpath -ldflags "{{.LDFLAGS}}" -o dist/{{.BIN}}_${os}_${arch}/{{.BIN}}$ext {{.PKG}}
+          echo "built dist/{{.BIN}}_${os}_${arch}"
+
+  install:
+    desc: Build and install to $INSTALL_DIR (default ~/.local/bin), plus the `aib` alias
+    deps: [build]
+    cmds:
+      - mkdir -p {{.INSTALL_DIR}}
+      - cp bin/{{.BIN}}{{exeExt}} {{.INSTALL_DIR}}/{{.BIN}}{{exeExt}}
+      - ln -sf {{.INSTALL_DIR}}/{{.BIN}} {{.INSTALL_DIR}}/aib
+      - echo "installed {{.INSTALL_DIR}}/{{.BIN}} (alias aib)"
+
+  uninstall:
+    desc: Remove the installed binary and alias (keeps ~/.agent-in-browser)
+    cmds:
+      - rm -f {{.INSTALL_DIR}}/{{.BIN}} {{.INSTALL_DIR}}/aib
+
+  run:
+    desc: "Run the CLI: task run -- call navigate url=example.com"
+    deps: [build]
+    cmds:
+      - ./bin/{{.BIN}} {{.CLI_ARGS}}
+
+  mcp:
+    desc: Run the MCP server on stdio (headed browser)
+    deps: [build]
+    cmds:
+      - ./bin/{{.BIN}} mcp {{.CLI_ARGS}}
+
+  inspect:
+    desc: Open the MCP Inspector against the local build (needs Node.js)
+    deps: [build]
+    cmds:
+      - npx -y @modelcontextprotocol/inspector ./bin/{{.BIN}} mcp
+
+  test:
+    desc: Unit tests
+    cmds:
+      - go test -race ./...
+
+  test:e2e:
+    desc: Run the example scenario on every installed browser (go test, integration tag)
+    cmds:
+      - go test -tags integration -count=1 -v ./internal/scenario/
+
+  smoke:
+    desc: "Run example scenarios on a browser matrix: task smoke BROWSERS=chrome,firefox"
+    deps: [build]
+    vars:
+      BROWSERS: '{{.BROWSERS | default "chrome,firefox"}}'
+    cmds:
+      - ./bin/{{.BIN}} run examples/scenarios/signup.yaml --browser {{.BROWSERS}} --junit aib-artifacts/junit.xml
+
+  lint:
+    desc: go vet + gofmt check (+ golangci-lint if installed)
+    cmds:
+      - go vet ./...
+      - test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+      - cmd: command -v golangci-lint >/dev/null && golangci-lint run || echo "golangci-lint not installed, skipped"
+
+  fmt:
+    desc: Format code
+    cmds: [gofmt -w .]
+
+  docs:tools:
+    desc: Regenerate docs/tools.md from the tool registry
+    deps: [build]
+    cmds:
+      - ./bin/{{.BIN}} tools --markdown > docs/tools.md
+
+  release:snapshot:
+    desc: Local goreleaser dry run into dist/
+    cmds:
+      - goreleaser release --snapshot --clean
+
+  release:
+    desc: "Tag and push a release (CI builds it): task release TAG=v0.1.0"
+    requires: { vars: [TAG] }
+    cmds:
+      - git tag -a {{.TAG}} -m "{{.TAG}}"
+      - git push origin {{.TAG}}
+
+  clean:
+    desc: Remove build outputs and test artifacts
+    cmds:
+      - rm -rf bin dist aib-artifacts
+
+  browsers:stop:
+    desc: Close the default persistent browser instance
+    cmds:
+      - ./bin/{{.BIN}} stop || true

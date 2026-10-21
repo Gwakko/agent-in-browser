@@ -1,0 +1,35 @@
+# Run: agent-in-browser run examples/scenarios/signup.yaml --browser chrome,firefox
+name: signup form
+browsers: [chrome, firefox]   # default matrix; --browser overrides
+viewport: { width: 1280, height: 800 }
+timeout: 20s                  # per step
+vars:
+  page: file://${dir}/../fixtures/form.html   # ${dir} = this file's directory; ${env.NAME} reads env vars
+
+steps:
+  - navigate: ${page}
+  - assert: { title_contains: "Sign up", selector: h1, text: "Create account" }
+
+  - name: submit without terms shows a warning
+    type: { selector: "#email", text: "qa@example.com" }
+  - click: Sign up                       # shorthand for { match: "Sign up" }
+  - assert: { text_contains: "Please accept the terms" }
+
+  - name: fill the form
+    fill_form:
+      fields:
+        - { match: "Name", value: "QA Bot" }
+        - { selector: "#plan", value: "Pro" }
+        - { match: "accept the terms", value: true }
+  - click: { selector: "button[type=submit]" }
+  - wait_for: { selector: "#lazy", timeout_ms: 5000 }
+  - assert:
+      selector: "#result"
+      text: "Welcome qa@example.com on pro"
+  - assert: { js: "document.querySelector('#tos').checked === true" }
+
+  - name: generic clickable elements work too
+    click: Clickable card
+  - assert: { selector: "#result", text: "Card clicked" }
+
+  - screenshot: aib-artifacts/signup-${browser}.png

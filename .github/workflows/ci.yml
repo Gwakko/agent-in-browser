@@ -1,0 +1,34 @@
+name: ci
+
+on:
+  push: { branches: [main] }
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version-file: go.mod }
+      - run: go vet ./...
+      - run: go test ./...
+      - run: go build ./cmd/agent-in-browser
+
+  e2e:
+    # Real browsers: Chrome and Firefox are preinstalled on GitHub's Ubuntu runners.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version-file: go.mod }
+      - run: go build -o bin/agent-in-browser ./cmd/agent-in-browser
+      - run: ./bin/agent-in-browser browsers
+      - run: ./bin/agent-in-browser run examples/scenarios/signup.yaml --browser chrome,firefox --junit aib-artifacts/junit.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: e2e-artifacts, path: aib-artifacts/ }

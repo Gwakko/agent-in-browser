@@ -1,0 +1,9 @@
+# A minimal public-site smoke test.
+name: example.com smoke
+steps:
+  - navigate: example.com
+  - assert: { url_contains: "example.com", title_contains: "Example Domain" }
+  - snapshot: {}
+  - click: { match: "Learn more" }
+    optional: true            # link text changes over time; don't fail on it
+  - assert: { no_console_errors: true }
