@@ -22,4 +22,4 @@
 - [ ] Device emulation presets (`resize device="iPhone 15"`), geolocation, network throttling (CDP).
 - [ ] Chromium via BiDi (chromedriver) so one protocol covers everything where possible.
 - [x] Packaging: Homebrew tap, MCP bundle (.mcpb) for Claude Desktop, MCP Registry listing
-- [ ] Packaging: Scoop bucket, npm wrapper (`npx agent-in-browser`), Docker image with Chromium + Firefox, Smithery
+- [ ] Packaging: Scoop bucket, npm wrapper (`npx agent-in-browser`), Docker image with Chromium + Firefox
